@@ -493,12 +493,17 @@ a{color:inherit;text-decoration:none}
 <div class="modal-overlay" id="modalAddModule">
   <div class="modal modal-lg">
     <div class="modal-header">
-      <div class="modal-title">Add Custom Module</div>
+      <div class="modal-title" id="am_modal_title">Add Custom Module</div>
       <button class="modal-close" onclick="closeModal('modalAddModule')">✕</button>
     </div>
+    <div id="am_context_label" style="font-size:12px;color:var(--mid);margin-bottom:10px;padding:8px 12px;background:var(--cream);border-radius:6px;display:none"></div>
     <div class="form-row">
-      <div class="form-field"><label class="form-label">Module Title</label><input class="form-input" id="am_title" placeholder="e.g. User Research Sprint"/></div>
+      <div class="form-field"><label class="form-label">Module Title *</label><input class="form-input" id="am_title" placeholder="e.g. User Research Sprint"/></div>
       <div class="form-field"><label class="form-label">Type</label><select class="form-select" id="am_type"><option value="learn">📚 Learn</option><option value="do">⚡ Do</option><option value="stretch">🚀 Stretch</option><option value="measure">📊 Measure</option><option value="ai">✦ AI Task</option><option value="case">💡 Case Study</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label class="form-label">Level</label><select class="form-select" id="am_level"><option value="">Any</option><option value="Aware">Aware</option><option value="Capable">Capable</option><option value="Mid">Mid</option><option value="Senior">Senior</option><option value="Expert">Expert</option></select></div>
+      <div class="form-field"><label class="form-label">Intensity</label><select class="form-select" id="am_intensity"><option value="low">Low</option><option value="med" selected>Medium</option><option value="high">High</option><option value="sprint">Sprint</option></select></div>
     </div>
     <div class="form-field"><label class="form-label">Description / Learning Objective</label><textarea class="form-textarea" id="am_desc" rows="2" placeholder="What will the designer learn or do?"></textarea></div>
     <div class="form-field"><label class="form-label">Practical Assignment</label><textarea class="form-textarea" id="am_assignment" rows="2" placeholder="Specific deliverable or action to produce"></textarea></div>
@@ -508,10 +513,9 @@ a{color:inherit;text-decoration:none}
       <div class="form-field"><label class="form-label">Business Impact</label><input class="form-input" id="am_impact" placeholder="Expected outcome or value"/></div>
       <div class="form-field"><label class="form-label">Team / Individual</label><select class="form-select" id="am_team"><option value="false">Individual</option><option value="true">Team Activity</option></select></div>
     </div>
-    <input type="hidden" id="am_phase_idx" value="0"/>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modalAddModule')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveCustomModule()">Add Module</button>
+      <button class="btn btn-primary" id="am_save_btn" onclick="saveCustomModule()">Save to Library</button>
     </div>
   </div>
 </div>
@@ -1169,8 +1173,9 @@ let state = {
   currentPage:'dashboard',
   moduleFilters:{ dim:'all', level:'all', intensity:'all', search:'' },
   sessionTemplates:[],
+  customLibrary:[],   // modules saved to the library (not tied to a phase)
   _drag:null, _lpPool:[],
-  roadmapView:'phase', // 'phase' | 'week'
+  roadmapView:'phase',
 };
 
 // ══════════════════════════════════════════════════════════════════
@@ -1183,6 +1188,8 @@ function saveState() {
     const payload = {
       designers: state.designers,
       activeDesignerId: state.activeDesignerId,
+      customLibrary: state.customLibrary || [],
+      sessionTemplates: state.sessionTemplates || [],
       savedAt: new Date().toISOString()
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -1229,6 +1236,8 @@ function loadState() {
       });
       state.designers = payload.designers;
       state.activeDesignerId = payload.activeDesignerId;
+      state.customLibrary = payload.customLibrary || [];
+      state.sessionTemplates = payload.sessionTemplates || [];
       return true;
     }
   } catch(e) {
@@ -2635,29 +2644,83 @@ function closeLibraryPicker() {
 }
 
 // ── openAddModule (custom module creation) ────────────────────────
+function editModuleInline(pi, mi, dId) {
+  const d = state.designers.find(x => x.id === dId);
+  if (!d || !d.roadmap.phases[pi]) return;
+  const mod = d.roadmap.phases[pi].modules[mi];
+  if (!mod) return;
+
+  state._addingToPhase = pi;
+  state._addingToDId   = dId;
+  state._editModMode   = true;
+  state._editModKey    = { source:'phase', pi, mi, dId, id: mod.id };
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  set('am_title',      mod.title);
+  set('am_desc',       mod.desc);
+  set('am_assignment', mod.assignment);
+  set('am_ai_task',    mod.ai_task);
+  set('am_criteria',   mod.criteria);
+  set('am_impact',     mod.impact);
+  set('am_type',       mod.type || 'do');
+  set('am_team',       mod.team ? 'true' : 'false');
+
+  const titleEl = document.getElementById('am_modal_title');
+  if (titleEl) titleEl.textContent = 'Edit Module';
+  const btnEl = document.getElementById('am_save_btn');
+  if (btnEl) btnEl.textContent = 'Save Changes';
+
+  // Hide phase selector — editing in place
+  const phaseRow = document.getElementById('am_phase_row');
+  if (phaseRow) phaseRow.style.display = 'none';
+
+  openModal('modalAddModule');
+}
+
 function openAddModule(phaseIdx, dId) {
-  state._addingToPhase  = phaseIdx !== undefined ? phaseIdx : -1;
-  state._addingToDId    = dId || (getD()?.id);
+  const resolvedDId = dId || getD()?.id;
+  const d = state.designers.find(x => x.id === resolvedDId) || getD();
+
+  const fromLibrary = (phaseIdx === undefined || phaseIdx === null || phaseIdx < 0);
+
+  state._addingToPhase  = fromLibrary ? -1 : phaseIdx;
+  state._addingToDId    = resolvedDId;
+  state._addingTarget   = fromLibrary ? 'library' : 'phase';
   state._editModMode    = false;
   state._editModKey     = null;
+
+  // Clear all fields
   ['am_title','am_desc','am_assignment','am_ai_task','am_criteria','am_impact'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
-  const t = document.getElementById('am_type'); if (t) t.value = 'do';
-  const tm= document.getElementById('am_team'); if (tm) tm.value = 'false';
+  const selects = { am_type:'do', am_team:'false', am_intensity:'med', am_level:'' };
+  Object.entries(selects).forEach(([id, val]) => { const el = document.getElementById(id); if (el) el.value = val; });
+
+  // Update modal title and button
+  const titleEl = document.getElementById('am_modal_title');
+  const btnEl   = document.getElementById('am_save_btn');
+  const ctxEl   = document.getElementById('am_context_label');
+
+  if (fromLibrary) {
+    if (titleEl) titleEl.textContent = 'Add Module to Library';
+    if (btnEl)   btnEl.textContent   = 'Save to Library';
+    if (ctxEl)   { ctxEl.textContent = 'This module will be saved to your Module Library and can be assigned to any roadmap phase.'; ctxEl.style.display=''; }
+  } else {
+    const phaseName = d?.roadmap?.phases?.[phaseIdx]?.label || ('Phase ' + (phaseIdx + 1));
+    if (titleEl) titleEl.textContent = 'Add Custom Module to ' + phaseName;
+    if (btnEl)   btnEl.textContent   = 'Add to ' + phaseName;
+    if (ctxEl)   { ctxEl.textContent = 'This module will be added directly to ' + phaseName + '.'; ctxEl.style.display=''; }
+  }
+
   openModal('modalAddModule');
 }
 
 function saveCustomModule() {
   const title = document.getElementById('am_title').value.trim();
   if (!title) return alert('Please enter a module title.');
-  const dId = state._addingToDId;
-  const pi  = state._addingToPhase;
-  const d   = state.designers.find(x => x.id === dId) || getD();
-  if (!d) return;
 
   const mod = {
-    id: 'custom_' + Date.now().toString(36),
+    id:         'custom_' + Date.now().toString(36),
     title,
     type:       document.getElementById('am_type').value,
     desc:       document.getElementById('am_desc').value.trim(),
@@ -2666,47 +2729,140 @@ function saveCustomModule() {
     criteria:   document.getElementById('am_criteria').value.trim(),
     impact:     document.getElementById('am_impact').value.trim(),
     team:       document.getElementById('am_team').value === 'true',
+    intensity:  document.getElementById('am_intensity') ? document.getElementById('am_intensity').value : 'med',
+    level:      document.getElementById('am_level') ? document.getElementById('am_level').value : '',
     custom: true, isFocus: false,
-    dimId: document.getElementById('am_type').value === 'ai' ? 'ai_design' : '',
+    dimId:  document.getElementById('am_type').value === 'ai' ? 'ai_design' : 'custom',
+    category: 'Custom',
   };
 
+  // ── EDIT MODE — update existing entry ─────────────────────────
   if (state._editModMode && state._editModKey) {
-    const {pi: epi, mi, dId: eDid} = state._editModKey;
-    const ed = state.designers.find(x => x.id === eDid);
-    if (ed && ed.roadmap.phases[epi]) {
-      ed.roadmap.phases[epi].modules[mi] = { ...ed.roadmap.phases[epi].modules[mi], ...mod };
+    const key = state._editModKey;
+
+    // Editing a library entry
+    if (key.source === 'library') {
+      if (!state.customLibrary) state.customLibrary = [];
+      // Try by libIdx first (fast), fallback to id search
+      const idx = (key.libIdx !== undefined && state.customLibrary[key.libIdx]?.id === key.id)
+        ? key.libIdx
+        : state.customLibrary.findIndex(m => m.id === key.id);
+      if (idx >= 0) {
+        state.customLibrary[idx] = { ...state.customLibrary[idx], ...mod, id: key.id };
+      } else {
+        state.customLibrary.push({ ...mod, id: key.id }); // re-add if missing
+      }
       debouncedSave();
       closeModal('modalAddModule');
-      renderRoadmap(ed);
+      showToast('\u2713 Module updated in library');
+      renderModules(getD());
       return;
+    }
+
+    // Editing a roadmap phase module
+    if (key.source === 'phase' || (key.pi !== undefined && key.mi !== undefined)) {
+      const ed = state.designers.find(x => x.id === key.dId);
+      if (ed && ed.roadmap.phases[key.pi]) {
+        ed.roadmap.phases[key.pi].modules[key.mi] = { ...ed.roadmap.phases[key.pi].modules[key.mi], ...mod, id: (key.id || mod.id) };
+        debouncedSave();
+        closeModal('modalAddModule');
+        showToast('\u2713 Module updated');
+        renderRoadmap(ed);
+        return;
+      }
     }
   }
 
-  ensurePhases(d);
-  if (pi >= 0 && d.roadmap.phases[pi]) {
+  // ── ADD MODE — decide destination ─────────────────────────────
+  const saveTarget = state._addingTarget; // 'library' | 'phase'
+
+  if (saveTarget === 'library' || state._addingToPhase < 0) {
+    // ── Save to Module Library ──────────────────────────────────
+    if (!state.customLibrary) state.customLibrary = [];
+    state.customLibrary.push(mod);
+    debouncedSave();
+    closeModal('modalAddModule');
+    showToast('\u2713 "' + title + '" saved to Module Library');
+    renderModules(getD());
+
+  } else {
+    // ── Save to a specific roadmap phase ───────────────────────
+    const dId = state._addingToDId;
+    const d   = state.designers.find(x => x.id === dId) || getD();
+    if (!d) { alert('No designer selected.'); return; }
+    ensurePhases(d);
+
+    let pi = state._addingToPhase;
+    if (!d.roadmap.phases[pi]) pi = 0;
+    if (!d.roadmap.phases[pi]) {
+      d.roadmap.phases.push({ id:'phase_0', label:'Phase 1', theme:'Foundation', weeks:2, intensity:'med', notes:'', modules:[] });
+      pi = 0;
+    }
     if (!d.roadmap.phases[pi].modules) d.roadmap.phases[pi].modules = [];
     d.roadmap.phases[pi].modules.push(mod);
+    debouncedSave();
+    closeModal('modalAddModule');
+    showToast('\u2713 "' + title + '" added to ' + (d.roadmap.phases[pi].label || 'Phase ' + (pi+1)));
+    renderRoadmap(d);
   }
-  closeModal('modalAddModule');
-  debouncedSave();
-  renderRoadmap(d);
 }
-
-// Legacy addModuleFromLibrary — now routes through addModuleToPhase
+// addModuleFromLibrary — handles both built-in and custom library entries
 function addModuleFromLibrary(dimId, idx, dId, phaseIdxStr) {
   const d = state.designers.find(x => x.id === dId);
   if (!d) { showToast('Select a designer first', true); return; }
   ensurePhases(d);
   const pi = (phaseIdxStr !== undefined && phaseIdxStr !== '') ? parseInt(phaseIdxStr) : d.roadmap.phases.length - 1;
-  // Build pool same as picker
+  // Build the same merged pool that renderModules uses
   const allDims = getAllDims();
   const pool = [];
   Object.entries(ACTIVITY_LIBRARY).forEach(([dId2, mods]) => {
     const dimInfo = allDims.find(x => x.id === dId2);
-    mods.forEach(mod => pool.push({ ...mod, dimId: dId2, dimName: mod.category||(dimInfo?dimInfo.name:dId2), isFocus: d.focusDimensions.includes(dId2) }));
+    mods.forEach(mod => pool.push({ ...mod, dimId: dId2, dimName: mod.category||(dimInfo?dimInfo.name:dId2), isFocus: d.focusDimensions.includes(dId2), isCustomLib:false }));
+  });
+  (state.customLibrary || []).forEach((mod, libIdx) => {
+    pool.push({ ...mod, dimName: mod.category||'Custom', isFocus:false, isCustomLib:true, libIdx });
   });
   state._lpPool = pool;
   addModuleToPhase(parseInt(idx), pi, dId);
+}
+
+
+function editLibraryModule(libIdx) {
+  const mod = (state.customLibrary || [])[libIdx];
+  if (!mod) return;
+  state._addingToPhase = -1;
+  state._addingToDId   = null;
+  state._addingTarget  = 'library';
+  state._editModMode   = true;
+  state._editModKey    = { source:'library', id: mod.id, libIdx };
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  set('am_title',      mod.title);
+  set('am_desc',       mod.desc);
+  set('am_assignment', mod.assignment);
+  set('am_ai_task',    mod.ai_task);
+  set('am_criteria',   mod.criteria);
+  set('am_impact',     mod.impact);
+  set('am_type',       mod.type || 'do');
+  set('am_team',       mod.team ? 'true' : 'false');
+  set('am_intensity',  mod.intensity || 'med');
+  set('am_level',      mod.level || '');
+  const titleEl = document.getElementById('am_modal_title');
+  if (titleEl) titleEl.textContent = 'Edit Library Module';
+  const btnEl = document.getElementById('am_save_btn');
+  if (btnEl) btnEl.textContent = 'Save Changes';
+  const ctxEl = document.getElementById('am_context_label');
+  if (ctxEl) { ctxEl.textContent = 'Editing a custom module in your library.'; ctxEl.style.display = ''; }
+  openModal('modalAddModule');
+}
+
+function deleteLibraryModule(libIdx) {
+  const mod = (state.customLibrary || [])[libIdx];
+  if (!mod) return;
+  if (!confirm('Delete "' + mod.title + '" from your library?')) return;
+  state.customLibrary.splice(libIdx, 1);
+  debouncedSave();
+  renderModules(getD());
+  showToast('"' + mod.title + '" removed from library');
 }
 
 
@@ -3397,7 +3553,7 @@ function renderModules(d) {
   const f = state.moduleFilters;
   const q = (f.search || '').toLowerCase().trim();
 
-  // Build full pool
+  // Build full pool — built-in library + custom library entries
   const pool = [];
   Object.entries(ACTIVITY_LIBRARY).forEach(([dimId, mods]) => {
     const dimInfo = allDims.find(x => x.id === dimId);
@@ -3407,7 +3563,19 @@ function renderModules(d) {
       dimName: mod.category || (dimInfo ? dimInfo.name : dimId.replace(/_/g,' ')),
       isFocus: d ? d.focusDimensions.includes(dimId) : false,
       isAI:    dimId === 'ai_design' || dimId === 'ai_design_advanced',
+      isCustomLib: false,
     }));
+  });
+  // Append custom library modules (saved by coaches)
+  (state.customLibrary || []).forEach((mod, libIdx) => {
+    pool.push({
+      ...mod,
+      dimName:     mod.category || 'Custom',
+      isFocus:     false,
+      isAI:        mod.dimId === 'ai_design',
+      isCustomLib: true,
+      libIdx,
+    });
   });
 
   // Score relevance
@@ -3515,6 +3683,10 @@ function renderModules(d) {
           : `<span style="font-size:11.5px;color:var(--mid)">Select a designer first</span>`
         }
         <button class="btn btn-secondary btn-xs" onclick="expandModuleCard(this)">▾ Details</button>
+        ${mod.isCustomLib
+          ? `<button class="btn btn-ghost btn-xs" onclick="editLibraryModule(${mod.libIdx})">✎ Edit</button>
+             <button class="btn btn-danger btn-xs" onclick="deleteLibraryModule(${mod.libIdx})">🗑</button>`
+          : ''}
       </div>
       <div class="module-full-detail" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)">
         ${mod.ai_task?`<div style="margin-bottom:8px;padding:8px 10px;background:var(--violet-pale);border-radius:5px"><div style="font-size:10px;font-weight:700;color:var(--violet);margin-bottom:3px">✦ AI TASK</div><div style="font-size:12px;color:var(--violet)">${mod.ai_task}</div></div>`:''}
