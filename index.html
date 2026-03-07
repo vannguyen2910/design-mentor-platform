@@ -150,32 +150,49 @@ a{color:inherit;text-decoration:none}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 
 /* ─── ASSESSMENT ─── */
-.section-block{background:white;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
-.section-header{padding:13px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:var(--cream);transition:background 0.15s;user-select:none}
-.section-header:hover{background:var(--border)}
-.section-title-row{display:flex;align-items:center;gap:10px}
-.section-name{font-weight:600;font-size:13.5px}
-.chevron{font-size:11px;transition:transform 0.2s;color:var(--mid)}
-.chevron.open{transform:rotate(180deg)}
-.section-body{display:none;padding:0}
-.section-body.open{display:block}
+/* ─── ASSESSMENT CARDS ─── */
+.assessment-grid{display:grid;gap:16px}
+.dim-card{background:white;border-radius:14px;border:1px solid var(--border);box-shadow:0 1px 4px rgba(13,13,20,0.05);overflow:hidden;transition:box-shadow 0.2s}
+.dim-card:hover{box-shadow:0 4px 20px rgba(13,13,20,0.10)}
+.dim-card-header{padding:16px 20px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.dim-card-meta{flex:1;min-width:0}
+.dim-name{font-weight:700;font-size:14px;color:var(--ink);margin-bottom:3px}
+.dim-desc{font-size:12px;color:var(--mid);line-height:1.5}
+.dim-card-body{padding:0 20px 18px;display:grid;gap:14px}
+.dim-card-body.two-col{grid-template-columns:1fr 1fr;gap:16px}
+.rating-panel{background:var(--paper);border-radius:10px;padding:13px 15px}
+.rating-panel.mentor-panel{background:#fff8f5;border:1px solid #f0ddd5}
+.rating-panel-label{font-size:10.5px;font-family:'DM Mono',monospace;font-weight:500;text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.rating-panel-label.self-label{color:var(--ink)}
+.rating-panel-label.mentor-label{color:var(--accent)}
+.rating-panel-label .label-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.self-dot{background:var(--ink)}
+.mentor-dot{background:var(--accent)}
+.level-buttons{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:11px}
+.level-btn{padding:5px 12px;border-radius:20px;font-size:11.5px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:white;color:var(--mid);font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.15s}
+.level-btn:hover{border-color:var(--ink);color:var(--ink);background:#f5f5f5}
+.level-btn.selected-self{background:var(--ink);border-color:var(--ink);color:white;box-shadow:0 2px 8px rgba(13,13,20,0.2)}
+.level-btn.selected-mentor{background:var(--accent);border-color:var(--accent);color:white;box-shadow:0 2px 8px rgba(200,80,26,0.25)}
+.level-btn.selected-both{background:var(--green);border-color:var(--green);color:white;box-shadow:0 2px 8px rgba(26,102,68,0.2)}
+.notes-input{width:100%;padding:8px 11px;border:1.5px solid transparent;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--ink);outline:none;background:white;resize:none;min-height:58px;line-height:1.5;transition:border-color 0.15s}
+.notes-input::placeholder{color:#b0aeb8}
+.notes-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(200,80,26,0.08)}
+.mentor-panel .notes-input:focus{border-color:var(--accent)}
+.notes-label{font-size:10px;font-family:'DM Mono',monospace;font-weight:500;color:var(--mid);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.dim-level-def{margin-top:8px;padding:9px 11px;background:rgba(13,13,20,0.04);border-radius:7px;font-size:11.5px;line-height:1.55;color:var(--mid);border-left:3px solid var(--border)}
+.mentor-panel .dim-level-def{background:rgba(200,80,26,0.05);border-left-color:var(--accent)}
+.align-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:10.5px;font-weight:600;background:var(--green-pale);color:var(--green);border:1px solid var(--green)}
 
-/* Dimension rows */
-.dim-row{padding:14px 20px;border-bottom:1px solid var(--border)}
-.dim-row:last-child{border-bottom:none}
-.dim-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
-.dim-name{font-weight:600;font-size:13.5px}
-.dim-desc{font-size:12px;color:var(--mid);margin-top:2px}
-.rating-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
-.rating-label{font-size:11px;font-family:'DM Mono',monospace;font-weight:500;color:var(--mid);width:48px;text-transform:uppercase}
-.level-buttons{display:flex;gap:5px;flex-wrap:wrap}
-.level-btn{padding:4px 11px;border-radius:20px;font-size:11.5px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:white;color:var(--mid);font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.13s}
-.level-btn:hover{border-color:var(--ink);color:var(--ink)}
-.level-btn.selected-self{background:var(--ink);border-color:var(--ink);color:white}
-.level-btn.selected-mentor{background:var(--accent);border-color:var(--accent);color:white}
-.level-btn.selected-both{background:var(--green);border-color:var(--green);color:white}
-.evidence-input{width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--mid);outline:none;margin-top:6px;background:var(--paper)}
-.evidence-input:focus{border-color:var(--accent);background:white}
+/* ─── SECTION BLOCK ─── */
+.section-block{margin-bottom:20px}
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:white;border-radius:12px;border:1px solid var(--border);cursor:pointer;margin-bottom:2px;transition:background 0.15s}
+.section-header:hover{background:var(--cream)}
+.section-title-row{display:flex;align-items:center;gap:10px}
+.section-name{font-weight:700;font-size:13.5px;color:var(--ink)}
+.section-body{display:none}
+.section-body.open{display:grid;gap:10px;padding-top:10px}
+.chevron{font-size:16px;color:var(--mid);transition:transform 0.2s}
+.chevron.open{transform:rotate(0deg)}
 
 /* ─── GAP ANALYSIS ─── */
 .gap-stat{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;text-align:center}
@@ -1231,7 +1248,12 @@ function loadState() {
         }
         // Ensure all dimension ratings exist
         getAllDims().forEach(dim => {
-          if (!d.ratings[dim.id]) d.ratings[dim.id] = { self:null, mentor:null, evidence:'' };
+          if (!d.ratings[dim.id]) d.ratings[dim.id] = { self:null, mentor:null, evidence:'', selfNotes:'', mentorNotes:'' };
+          // Migrate old evidence field → selfNotes if selfNotes is empty
+          if (d.ratings[dim.id] && d.ratings[dim.id].evidence && !d.ratings[dim.id].selfNotes) {
+            d.ratings[dim.id].selfNotes = d.ratings[dim.id].evidence;
+          }
+          if (!d.ratings[dim.id].mentorNotes) d.ratings[dim.id].mentorNotes = '';
         });
       });
       state.designers = payload.designers;
@@ -1757,65 +1779,114 @@ function confirmDeleteDesigner() {
 // ══════════════════════════════════════════════════════════════════
 
 function renderAssessment(d) {
-  if(!d) { document.getElementById('assessmentContent').innerHTML=emptyStateHTML('👤','No Designer Selected','Select a designer from the sidebar or add a new one.'); return; }
-  document.getElementById('assessmentTitle').textContent=`${d.name} — Assessment`;
-  const sections=[FRAMEWORK.operating, FRAMEWORK.skills];
-  const html=sections.map(sec=>{
-    const key=sec===FRAMEWORK.operating?'operating':'skills';
-    const isAI=false;
+  if (!d) {
+    document.getElementById('assessmentContent').innerHTML = emptyStateHTML('👤','No Designer Selected','Select a designer from the sidebar or add a new one.');
+    return;
+  }
+  document.getElementById('assessmentTitle').textContent = d.name + ' \u2014 Assessment';
+
+  const sections  = [FRAMEWORK.operating, FRAMEWORK.skills];
+  const showSelf   = state.mode === 'self'   || state.mode === 'compare';
+  const showMentor = state.mode === 'mentor' || state.mode === 'compare';
+  const twoCol     = state.mode === 'compare';
+
+  const html = sections.map(sec => {
+    const key   = sec === FRAMEWORK.operating ? 'operating' : 'skills';
+    const rated = sec.dimensions.filter(dim => {
+      const r = d.ratings[dim.id] || {};
+      return r.self !== null || r.mentor !== null;
+    }).length;
+
+    const ratedBadge = rated > 0
+      ? `<span style="font-size:11px;color:var(--green);font-weight:600;background:var(--green-pale);padding:2px 9px;border-radius:20px">${rated} rated</span>`
+      : '';
+
+    const dimCards = sec.dimensions.map(dim => {
+      const r           = d.ratings[dim.id] || { self:null, mentor:null, selfNotes:'', mentorNotes:'' };
+      const selfLevel   = r.self   !== null ? sec.levels[r.self]   : null;
+      const mentorLevel = r.mentor !== null ? sec.levels[r.mentor] : null;
+      const aligned     = !!(selfLevel && mentorLevel && selfLevel === mentorLevel);
+      const selfDef     = selfLevel   && dim.levelDefs ? (dim.levelDefs[selfLevel]   || '') : '';
+      const mentorDef   = mentorLevel && dim.levelDefs ? (dim.levelDefs[mentorLevel] || '') : '';
+
+      const buildButtons = (who) => sec.levels.map((l, i) => {
+        const isSelected = who === 'self' ? r.self === i : r.mentor === i;
+        const selClass = aligned && isSelected ? 'selected-both'
+                       : (who === 'self' && r.self === i)   ? 'selected-self'
+                       : (who === 'mentor' && r.mentor === i) ? 'selected-mentor' : '';
+        const def = dim.levelDefs && dim.levelDefs[l] ? dim.levelDefs[l].replace(/\n/g,'&#10;') : '';
+        return `<button class="level-btn ${selClass}" onclick="setRating('${dim.id}','${who}',${i},'${d.id}')" title="${def}">${l}</button>`;
+      }).join('');
+
+      const alignBadge = aligned
+        ? `<span class="align-badge" style="margin-left:auto">\u2713 Aligned</span>` : '';
+
+      const gapBadge = (selfLevel && mentorLevel && !aligned)
+        ? `<span style="font-size:11px;padding:3px 9px;border-radius:20px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;font-weight:600;flex-shrink:0">\u26a0 Gap</span>` : '';
+
+      const selfPanel = showSelf ? `
+        <div class="rating-panel">
+          <div class="rating-panel-label self-label">
+            <span class="label-dot self-dot"></span> Self Assessment
+            ${showSelf && !showMentor ? alignBadge : ''}
+          </div>
+          <div class="level-buttons">${buildButtons('self')}</div>
+          ${selfDef ? `<div class="dim-level-def">${selfDef}</div>` : ''}
+          <div class="notes-label" style="margin-top:10px">My notes &amp; examples</div>
+          <textarea class="notes-input" placeholder="What evidence supports this level? Key examples, projects..." rows="2"
+            onchange="setNotes('${dim.id}','${d.id}','self',this.value)"
+            onblur="setNotes('${dim.id}','${d.id}','self',this.value)">${r.selfNotes || ''}</textarea>
+        </div>` : '';
+
+      const mentorPanel = showMentor ? `
+        <div class="rating-panel mentor-panel">
+          <div class="rating-panel-label mentor-label">
+            <span class="label-dot mentor-dot"></span> Mentor Assessment
+            ${showMentor && showSelf ? alignBadge : ''}
+          </div>
+          <div class="level-buttons">${buildButtons('mentor')}</div>
+          ${mentorDef ? `<div class="dim-level-def">${mentorDef}</div>` : ''}
+          <div class="notes-label" style="margin-top:10px">Mentor observations &amp; coaching notes</div>
+          <textarea class="notes-input" placeholder="Observations, coaching focus, specific examples seen in their work..." rows="2"
+            onchange="setNotes('${dim.id}','${d.id}','mentor',this.value)"
+            onblur="setNotes('${dim.id}','${d.id}','mentor',this.value)">${r.mentorNotes || ''}</textarea>
+        </div>` : '';
+
+      return `<div class="dim-card">
+        <div class="dim-card-header">
+          <div class="dim-card-meta">
+            <div class="dim-name">${dim.isAI ? '\u2726 ' : ''}${dim.name}</div>
+            <div class="dim-desc">${dim.desc}</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+            ${dim.isAI ? '<span class="badge badge-ai">AI</span>' : ''}
+            ${gapBadge}
+          </div>
+        </div>
+        <div class="dim-card-body${twoCol ? ' two-col' : ''}">
+          ${selfPanel}${mentorPanel}
+        </div>
+      </div>`;
+    }).join('');
+
     return `<div class="section-block">
       <div class="section-header" onclick="toggleSection('${key}')">
         <div class="section-title-row">
           <span class="badge ${sec.badge}">${sec.label}</span>
-          <span class="section-name">${sec.label} — ${sec.dimensions.length} Dimensions</span>
+          <span class="section-name">${sec.label} \u2014 ${sec.dimensions.length} Dimensions</span>
+          ${ratedBadge}
         </div>
-        <span class="chevron open" id="chev-${key}">▾</span>
+        <span class="chevron open" id="chev-${key}">\u25be</span>
       </div>
       <div class="section-body open" id="body-${key}">
-        ${sec.dimensions.map(dim=>{
-          const r=d.ratings[dim.id]||{self:null,mentor:null,evidence:''};
-          const showSelf=state.mode==='self'||state.mode==='compare';
-          const showMentor=state.mode==='mentor'||state.mode==='compare';
-          const isBoth=r.self!==null&&r.mentor!==null&&r.self===r.mentor;
-          return `<div class="dim-row">
-            <div class="dim-header">
-              <div>
-                <div class="dim-name">${dim.isAI?'✦ ':''} ${dim.name}</div>
-                <div class="dim-desc">${dim.desc}</div>
-              </div>
-              ${dim.isAI?`<span class="badge badge-ai">AI</span>`:''}
-            </div>
-            ${showSelf?`<div class="rating-row"><div class="rating-label">Self</div><div class="level-buttons">${sec.levels.map((l,i)=>{
-              const cls=isBoth&&r.self===i?'selected-both':r.self===i?'selected-self':'';
-              const defText=(dim.levelDefs&&dim.levelDefs[l])?dim.levelDefs[l].replace(/\n/g,'&#10;'):'';
-              return `<button class="level-btn ${cls}" onclick="setRating('${dim.id}','self',${i},'${d.id}')" title="${defText}">${l}</button>`;
-            }).join('')}</div></div>`:''}
-            ${showMentor?`<div class="rating-row"><div class="rating-label">Mentor</div><div class="level-buttons">${sec.levels.map((l,i)=>{
-              const cls=isBoth&&r.mentor===i?'selected-both':r.mentor===i?'selected-mentor':'';
-              const defText=(dim.levelDefs&&dim.levelDefs[l])?dim.levelDefs[l].replace(/\n/g,'&#10;'):'';
-              return `<button class="level-btn ${cls}" onclick="setRating('${dim.id}','mentor',${i},'${d.id}')" title="${defText}">${l}</button>`;
-            }).join('')}</div></div>`:''}
-            ${(()=>{
-              const selfLevel=sec.levels[r.self];
-              const mentorLevel=sec.levels[r.mentor];
-              const selfDef=selfLevel&&dim.levelDefs?dim.levelDefs[selfLevel]:'';
-              const mentorDef=mentorLevel&&dim.levelDefs?dim.levelDefs[mentorLevel]:'';
-              const showDef=(state.mode==='self'&&selfDef)||(state.mode==='mentor'&&mentorDef)||(state.mode==='compare'&&(selfDef||mentorDef));
-              if(!showDef) return '';
-              const lines=[];
-              if(state.mode!=='mentor'&&selfDef) lines.push(`<div style="margin-bottom:4px"><span style="font-size:10px;font-weight:600;color:var(--mid);text-transform:uppercase;letter-spacing:.5px">Self — ${selfLevel}</span><div style="font-size:12px;line-height:1.55;color:var(--ink);white-space:pre-line;margin-top:3px">${selfDef}</div></div>`);
-              if(state.mode!=='self'&&mentorDef&&mentorDef!==selfDef) lines.push(`<div><span style="font-size:10px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.5px">Mentor — ${mentorLevel}</span><div style="font-size:12px;line-height:1.55;color:var(--ink);white-space:pre-line;margin-top:3px">${mentorDef}</div></div>`);
-              if(state.mode==='compare'&&selfDef===mentorDef&&selfDef) lines.push(`<div><span style="font-size:10px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:.5px">Aligned — ${selfLevel}</span><div style="font-size:12px;line-height:1.55;color:var(--ink);white-space:pre-line;margin-top:3px">${selfDef}</div></div>`);
-              return `<div style="margin:8px 0 4px;padding:10px 12px;background:var(--surface);border-radius:7px;border-left:3px solid var(--paper-dark,#e8e4dc)">${lines.join('')}</div>`;
-            })()}
-            <input class="evidence-input" placeholder="Notes / evidence / examples..." value="${r.evidence||''}" onchange="setEvidence('${dim.id}','${d.id}',this.value)"/>
-          </div>`;
-        }).join('')}
+        ${dimCards}
       </div>
     </div>`;
   }).join('');
-  document.getElementById('assessmentContent').innerHTML=html;
+
+  document.getElementById('assessmentContent').innerHTML = html;
 }
+
 
 function toggleSection(key) {
   document.getElementById('body-'+key).classList.toggle('open');
@@ -1839,8 +1910,17 @@ function setRating(dimId,who,val,dId) {
 }
 
 function setEvidence(dimId,dId,val) {
+  // legacy – kept for backward compat
   const d=state.designers.find(x=>x.id===dId);
-  if(d&&d.ratings[dimId]) d.ratings[dimId].evidence=val;
+  if(d&&d.ratings[dimId]) d.ratings[dimId].selfNotes=val;
+  debouncedSave();
+}
+function setNotes(dimId, dId, who, val) {
+  const d = state.designers.find(x => x.id === dId);
+  if (!d || !d.ratings[dimId]) return;
+  if (who === 'self')   d.ratings[dimId].selfNotes   = val;
+  if (who === 'mentor') d.ratings[dimId].mentorNotes = val;
+  debouncedSave();
 }
 
 // ══════════════════════════════════════════════════════════════════
